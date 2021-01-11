@@ -1,5 +1,20 @@
-FROM php:7-apache-stretch
+FROM php:7.3-apache-stretch
 LABEL author="Al Twohill <al@twohill.nz>"
+
+# Remove and re-create www-data users and map to local system ID
+ARG USER_ID
+ARG GROUP_ID
+
+RUN if [ ${USER_ID:-0} -ne 0 ] && [ ${GROUP_ID:-0} -ne 0 ]; then \
+    userdel -f www-data &&\
+    if getent group www-data ; then groupdel www-data; fi &&\
+    groupadd -g ${GROUP_ID} www-data &&\
+    useradd -l -u ${USER_ID} -g www-data www-data &&\
+    install -d -m 0755 -o www-data -g www-data /home/www-data &&\
+    chown --changes --silent --no-dereference --recursive \
+          --from=33:33 ${USER_ID}:${GROUP_ID} \
+        /home/www-data \
+;fi
 
 # Install components
 RUN apt-get update -y && apt-get install -y \
@@ -20,6 +35,7 @@ RUN apt-get update -y && apt-get install -y \
 		unzip \
 		xfonts-75dpi \
 		xfonts-base \
+		wget \
 		zip \
 		zlib1g-dev \
 	--no-install-recommends && \
@@ -29,8 +45,8 @@ RUN apt-get update -y && apt-get install -y \
 	apt-get autoremove -y && \
 	rm -r /var/lib/apt/lists/* && \
 	cd /root && \
-    curl -LSs https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.stretch_amd64.deb -o wkhtmltox_0.12.5-1.stretch_amd64.deb && \
-    dpkg -i wkhtmltox_0.12.5-1.stretch_amd64.deb
+    wget -q https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.stretch_amd64.deb && \
+    dpkg -i wkhtmltox_0.12.6-1.stretch_amd64.deb
 
 # Install PHP Extensions
 RUN docker-php-ext-configure intl && \
@@ -57,12 +73,12 @@ RUN docker-php-ext-configure intl && \
 # Apache + xdebug configuration
 RUN { \
                 echo "<VirtualHost *:80>"; \
-                echo "  DocumentRoot /var/www/html/public"; \
+                echo "  DocumentRoot /var/www/html"; \
                 echo "  LogLevel warn"; \
                 echo "  ErrorLog /var/log/apache2/error.log"; \
                 echo "  CustomLog /var/log/apache2/access.log combined"; \
                 echo "  ServerSignature Off"; \
-                echo "  <Directory /var/www/html/public/>"; \
+                echo "  <Directory /var/www/html>"; \
                 echo "    Options +FollowSymLinks"; \
                 echo "    Options -ExecCGI -Includes -Indexes"; \
                 echo "    AllowOverride all"; \
