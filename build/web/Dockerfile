@@ -40,6 +40,7 @@ RUN apt-get update -y && apt-get install -y \
 		zlib1g-dev \
 	--no-install-recommends && \
 	curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && \
+	curl -sS http://silverstripe.github.io/sspak/install | php -- /usr/local/bin && \
 	pecl install xdebug && \
 	pecl install imagick-3.4.3 && \
 	apt-get autoremove -y && \
@@ -95,9 +96,7 @@ RUN { \
 
 RUN echo "ServerName localhost" > /etc/apache2/conf-available/fqdn.conf && \
 	echo "date.timezone = Pacific/Auckland" > /usr/local/etc/php/conf.d/timezone.ini && \
-	a2enmod rewrite expires remoteip cgid && \
-	usermod -u 1000 www-data && \
-	usermod -G staff www-data
+	a2enmod rewrite expires remoteip cgid
 
 EXPOSE 80
 CMD ["apache2-foreground"]
