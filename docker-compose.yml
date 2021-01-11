@@ -1,20 +1,32 @@
 version: '3'
 services:
- web:
-   image: twohill/silverstripe4
-   working_dir: /var/www
-   ports:
-    - 80:80
-   volumes:
-    - .:/var/www/html
+  database:
+    image: mariadb
+    volumes:
+      - db-data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "${SS_DATABASE_PASSWORD}"  #set this via your env variable
+    ports:
+      - 3030:3306
 
- database:
-   image: mariadb
-   volumes:
-    - db-data:/var/lib/mysql
-   restart: always
-   environment:
-     MYSQL_ROOT_PASSWORD: "${SS_DATABASE_PASSWORD}"  #set this via your env variable
+  web:
+    image: ilateral/php:7.3-apache-stretch
+    working_dir: /var/www
+    restart: always
+    build:
+      context: ./build/web
+      args:
+        USER_ID: ${WWW_USER_ID:-0}
+        GROUP_ID: ${WWW_GROUP_ID:-0}
+    ports:
+      - 8080:80
+    volumes:
+      - ../:/var/www/html
+    depends_on:
+      - database
+    links:
+      - database
 
 volumes:
  db-data:
