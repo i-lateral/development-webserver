@@ -1,6 +1,7 @@
 version: '3'
 services:
   database:
+    container_name: dev-server-db
     image: mariadb
     volumes:
       - db-data:/var/lib/mysql
@@ -11,6 +12,7 @@ services:
       - 3030:3306
 
   web:
+    container_name: dev-server-web
     image: ilateral/php:7.3-apache-stretch
     working_dir: /var/www
     restart: always
