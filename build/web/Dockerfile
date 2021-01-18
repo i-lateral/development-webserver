@@ -22,6 +22,7 @@ RUN apt-get update -y && apt-get install -y \
 		g++ \
 		git-core \
 		gzip \
+		less \
 		libcurl4-openssl-dev \
 		libgd-dev \
 		libldap2-dev \
@@ -31,6 +32,7 @@ RUN apt-get update -y && apt-get install -y \
 		libtidy-dev \
 		libxslt-dev \
 		libzip-dev \
+		nano \
 		openssh-client \
 		unzip \
 		xfonts-75dpi \
@@ -56,9 +58,6 @@ RUN docker-php-ext-configure intl && \
 	docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
 	docker-php-ext-enable xdebug && \
 	docker-php-ext-enable imagick && \
-	sed -i '1 a xdebug.remote_autostart=0' /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && \
-        sed -i '1 a xdebug.remote_connect_back=0 ' /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && \
-        sed -i '1 a xdebug.remote_enable=1' /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && \
 	docker-php-ext-install -j$(nproc) \
 		intl \
 		gd \
@@ -71,32 +70,14 @@ RUN docker-php-ext-configure intl && \
 		xsl \
 		zip
 
-# Apache + xdebug configuration
-RUN { \
-                echo "<VirtualHost *:80>"; \
-                echo "  DocumentRoot /var/www/html"; \
-                echo "  LogLevel warn"; \
-                echo "  ErrorLog /var/log/apache2/error.log"; \
-                echo "  CustomLog /var/log/apache2/access.log combined"; \
-                echo "  ServerSignature Off"; \
-                echo "  <Directory /var/www/html>"; \
-                echo "    Options +FollowSymLinks"; \
-                echo "    Options -ExecCGI -Includes -Indexes"; \
-                echo "    AllowOverride all"; \
-                echo; \
-                echo "    Require all granted"; \
-                echo "  </Directory>"; \
-                echo "  <LocationMatch assets/>"; \
-                echo "    php_flag engine off"; \
-                echo "  </LocationMatch>"; \
-                echo; \
-                echo "  IncludeOptional sites-available/000-default.local*"; \
-                echo "</VirtualHost>"; \
-	} | tee /etc/apache2/sites-available/000-default.conf
+# Apache configuration
+RUN a2enmod rewrite expires remoteip cgid
+COPY vhost.conf /etc/apache2/sites-available/000-default.conf
+RUN echo "ServerName localhost" > /etc/apache2/conf-available/fqdn.conf
 
-RUN echo "ServerName localhost" > /etc/apache2/conf-available/fqdn.conf && \
-	echo "date.timezone = Pacific/Auckland" > /usr/local/etc/php/conf.d/timezone.ini && \
-	a2enmod rewrite expires remoteip cgid
+COPY php-custom.ini /usr/local/etc/php/conf.d/custom.ini
+COPY php-xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
+EXPOSE 9090
 EXPOSE 80
 CMD ["apache2-foreground"]
