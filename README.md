@@ -58,3 +58,20 @@ DB_ROOT_PASSWORD=dev
 WWW_USER_ID=1000
 WWW_GROUP_ID=1000
 ```
+
+### Executing project tasks (such as Sake or SSPAK)
+
+If you want to execute your local project commands (such as SilverStripe
+sake), you will have to do them via `docker-compose exec` (using the
+`docker-compose.yml` file located in the development-webserver project).
+You MAY also need to run the command as the local web user.
+
+#### Sake
+
+    docker-compose -f ../development-webserver/docker-compose.yml exec -u www-data web /var/www/html/project-name/vendor/bin/sake dev/build flush=1
+
+##### SSPAK
+
+    docker-compose -f ../development-webserver/docker-compose.yml exec -u www-data web sspak load /var/www/html/site.sspak /var/www/html/project-name
+
+**NOTE** When executing these commands, the system paths are within the docker container NOT the local (host) filesystem
