@@ -21,6 +21,8 @@ services:
       args:
         USER_ID: ${WWW_USER_ID:-0}
         GROUP_ID: ${WWW_GROUP_ID:-0}
+    environment:
+      XDEBUG_CONFIG: ${XDEBUG_CONFIG}
     ports:
       - 8080:80
     volumes:
