@@ -78,6 +78,9 @@ RUN echo "ServerName localhost" > /etc/apache2/conf-available/fqdn.conf
 COPY php-custom.ini /usr/local/etc/php/conf.d/custom.ini
 COPY php-xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-EXPOSE 9090
-EXPOSE 80
+# Set up entrypoint enabling host.docker.internal for Linux
+COPY entrypoint.sh /usr/bin/entrypoint.sh
+RUN chmod 777 /usr/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/bin/entrypoint.sh"]
 CMD ["apache2-foreground"]
