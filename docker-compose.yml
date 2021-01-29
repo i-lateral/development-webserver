@@ -9,7 +9,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"  #set this via your env variable
     ports:
-      - 3030:3306
+      - 3306:3306
 
   web:
     container_name: dev-server-web
@@ -24,7 +24,7 @@ services:
     environment:
       XDEBUG_CONFIG: ${XDEBUG_CONFIG}
     ports:
-      - 8080:80
+      - 80:80
     volumes:
       - ../:/var/www/html
     depends_on:
