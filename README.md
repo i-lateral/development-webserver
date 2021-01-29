@@ -59,6 +59,21 @@ WWW_USER_ID=1000
 WWW_GROUP_ID=1000
 ```
 
+### Project Specific Environmental Variables
+
+When adding environmental config for a specific project, you need to
+reference docker containers by their container identifier (rather than
+a hostname).
+
+For example, on a silverstripe project, you need to use `database` as the 
+mysql server name (rather than the db hostname). EG:
+
+    SS_DATABASE_CLASS="MySQLPDODatabase"
+    SS_DATABASE_SERVER="database" # NOTE this is the internal container ID
+    SS_DATABASE_USERNAME="root"
+    SS_DATABASE_PASSWORD="dev"
+    SS_DATABASE_NAME="dbschema"
+
 ### Executing project tasks (such as Sake or SSPAK)
 
 If you want to execute your local project commands (such as SilverStripe
