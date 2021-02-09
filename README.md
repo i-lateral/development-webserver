@@ -51,12 +51,30 @@ The user ID for your local system user, this is used to re-map the container www
 
 The user ID for your local system group, this is used to re-map the container www-data user ID to the same user ID as your host/local system
 
+`XDEBUG_HOST`
+
+The Hostname or IP address address of the docker host, used by xdebug. On
+Windows this should be: `host.docker.internal`
+
+**NOTE** If you are using linux you will have to discover the host IP address.
+It is usually something like `172.27.0.1`. You can do this by running `netscan`
+on the `php` container while it is running:
+
+1. build and run docker (as below)
+2. Step into the PHP container `docker-composer exec php /bin/bash`
+3. Run netstat continually `netstat -c`
+4. Access the project URL (usually http://localhost:8080 or https://localhost:4430)
+5. Check the netstat output, you should see something like: `172.27.0.1:9001`
+6. Add the IP address to the `XDEBUG_HOST`` in your .env file
+7. rebuild docker and re-run
+
 ### Example `.env`
 
 ```
 DB_ROOT_PASSWORD=dev
 WWW_USER_ID=1000
 WWW_GROUP_ID=1000
+XDEBUG_HOST=172.27.0.1
 ```
 
 ### Project Specific Environmental Variables

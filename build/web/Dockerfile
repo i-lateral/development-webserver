@@ -4,6 +4,7 @@ LABEL author="Al Twohill <al@twohill.nz>"
 # Remove and re-create www-data users and map to local system ID
 ARG USER_ID
 ARG GROUP_ID
+ARG XDEBUG_HOST
 
 RUN if [ ${USER_ID:-0} -ne 0 ] && [ ${GROUP_ID:-0} -ne 0 ]; then \
     userdel -f www-data &&\
@@ -18,6 +19,7 @@ RUN if [ ${USER_ID:-0} -ne 0 ] && [ ${GROUP_ID:-0} -ne 0 ]; then \
 
 # Install components
 RUN apt-get update -y && apt-get install -y \
+        net-tools \
 		curl \
 		g++ \
 		git-core \
@@ -40,10 +42,10 @@ RUN apt-get update -y && apt-get install -y \
 		wget \
 		zip \
 		zlib1g-dev \
+		mysql-client \
 	--no-install-recommends && \
 	curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && \
 	curl -sS http://silverstripe.github.io/sspak/install | php -- /usr/local/bin && \
-	pecl install xdebug && \
 	pecl install imagick-3.4.3 && \
 	apt-get autoremove -y && \
 	rm -r /var/lib/apt/lists/* && \
@@ -56,7 +58,6 @@ RUN docker-php-ext-configure intl && \
 	docker-php-ext-configure mysqli --with-mysqli=mysqlnd && \
 	docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ && \
 	docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
-	docker-php-ext-enable xdebug && \
 	docker-php-ext-enable imagick && \
 	docker-php-ext-install -j$(nproc) \
 		intl \
@@ -76,7 +77,11 @@ COPY vhost.conf /etc/apache2/sites-available/000-default.conf
 RUN echo "ServerName localhost" > /etc/apache2/conf-available/fqdn.conf
 
 COPY php-custom.ini /usr/local/etc/php/conf.d/custom.ini
+
+# Install and configure xdebug must be 2.9.x for settings to work
+RUN pecl install -f xdebug-2.9.8 && docker-php-ext-enable xdebug
 COPY php-xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN echo xdebug.remote_host=${XDEBUG_HOST} >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 # Set up entrypoint enabling host.docker.internal for Linux
 COPY entrypoint.sh /usr/bin/entrypoint.sh
