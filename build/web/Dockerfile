@@ -4,7 +4,6 @@ LABEL author="Al Twohill <al@twohill.nz>"
 # Remove and re-create www-data users and map to local system ID
 ARG USER_ID
 ARG GROUP_ID
-ARG XDEBUG_HOST
 
 RUN if [ ${USER_ID:-0} -ne 0 ] && [ ${GROUP_ID:-0} -ne 0 ]; then \
     userdel -f www-data &&\
@@ -81,7 +80,6 @@ COPY php-custom.ini /usr/local/etc/php/conf.d/custom.ini
 # Install and configure xdebug must be 2.9.x for settings to work
 RUN pecl install -f xdebug-2.9.8 && docker-php-ext-enable xdebug
 COPY php-xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-RUN echo xdebug.remote_host=${XDEBUG_HOST} >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 # Set up entrypoint enabling host.docker.internal for Linux
 COPY entrypoint.sh /usr/bin/entrypoint.sh

@@ -51,30 +51,12 @@ The user ID for your local system user, this is used to re-map the container www
 
 The user ID for your local system group, this is used to re-map the container www-data user ID to the same user ID as your host/local system
 
-`XDEBUG_HOST`
-
-The Hostname or IP address address of the docker host, used by xdebug. On
-Windows this should be: `host.docker.internal`
-
-**NOTE** If you are using linux you will have to discover the host IP address.
-It is usually something like `172.27.0.1`. You can do this by running `netscan`
-on the `php` container while it is running:
-
-1. build and run docker (as below)
-2. Step into the PHP container `docker-composer exec php /bin/bash`
-3. Run netstat continually `netstat -c`
-4. Access the project URL (usually http://localhost:8080 or https://localhost:4430)
-5. Check the netstat output, you should see something like: `172.27.0.1:9001`
-6. Add the IP address to the `XDEBUG_HOST`` in your .env file
-7. rebuild docker and re-run
-
 ### Example `.env`
 
 ```
 DB_ROOT_PASSWORD=dev
 WWW_USER_ID=1000
 WWW_GROUP_ID=1000
-XDEBUG_HOST=172.27.0.1
 ```
 
 ### Project Specific Environmental Variables
@@ -108,3 +90,56 @@ You MAY also need to run the command as the local web user.
     docker-compose -f ../development-webserver/docker-compose.yml exec -u www-data web sspak load /var/www/html/site.sspak /var/www/html/project-name
 
 **NOTE** When executing these commands, the system paths are within the docker container NOT the local (host) filesystem
+
+## xDebug
+
+This server is pre-configured to run xdebug version 2.9 for complex
+debugging support (such as step debugging).
+
+In order to get around hostname issues on Linux, these containers are
+configured to use static IP address inside the docker server network.
+These addresses are on the subnet `172.158.0.1`, you may need to ensure
+you do not have any other docker container running on this subnet.
+
+## Networking Troubleshooting
+
+Sometimes networking issues on your docker server can cause issues
+related to IP addresses/host names etc. If this is the case, the following
+can help:
+
+### IP command on host
+
+While your docker containers are running, if you run `ip a | grep 172.`
+you will get list of local networking connections that should look 
+something like:
+
+```
+inet 172.25.0.1/16 brd 172.25.255.255 scope global br-eea78b330429
+inet 172.21.0.1/16 brd 172.21.255.255 scope global br-0e1132982184
+inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+```
+
+The interface `docker0` is the root interface, each interface marked
+as `br-xxxxxxxxx` is a specific docker network. This can help with
+diagnosing the IP addresses of the network your docker containers
+are running in.
+
+### Netscan inside container
+
+You can also try to diagnose connection issues by:
+
+1. accessing your container with: `docker-composer exec web /bin/bash`
+2. Running netscan: `netscan -c`
+3. Connecting to the development server via the browser
+
+You should then get an output similar to:
+
+```
+Proto Recv-Q Send-Q Local Address           Foreign Address         State      
+tcp        0      0 ad3341df3430:55694      dev-server-db.deve:3306 ESTABLISHED
+tcp        0      0 ad3341df3430:55484      [HOSTNAME]:9090 ESTABLISHED
+tcp        0      0 ad3341df3430:80         [HOSTNAME]:52772 ESTABLISHED
+```
+
+This will allow you to detect if your host system is connecting correctly and
+what it's hostname is.
