@@ -1,4 +1,4 @@
-FROM php:7.3-apache-stretch
+FROM php:7.4-apache-buster
 LABEL author="Al Twohill <al@twohill.nz>"
 
 # Remove and re-create www-data users and map to local system ID
@@ -26,6 +26,9 @@ RUN apt-get update -y && apt-get install -y \
 		less \
 		libcurl4-openssl-dev \
 		libgd-dev \
+		libjpeg-dev \
+		libpng-dev \
+		libfreetype6-dev \
 		libldap2-dev \
 		libicu-dev \
 		libmagickwand-dev \
@@ -41,7 +44,7 @@ RUN apt-get update -y && apt-get install -y \
 		wget \
 		zip \
 		zlib1g-dev \
-		mysql-client \
+		mariadb-client \
 	--no-install-recommends && \
 	curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && \
 	curl -sS http://silverstripe.github.io/sspak/install | php -- /usr/local/bin && \
@@ -56,7 +59,7 @@ RUN apt-get update -y && apt-get install -y \
 RUN docker-php-ext-configure intl && \
 	docker-php-ext-configure mysqli --with-mysqli=mysqlnd && \
 	docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ && \
-	docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
+	docker-php-ext-configure gd --with-jpeg && \
 	docker-php-ext-enable imagick && \
 	docker-php-ext-install -j$(nproc) \
 		intl \
@@ -80,6 +83,14 @@ COPY php-custom.ini /usr/local/etc/php/conf.d/custom.ini
 # Install and configure xdebug must be 2.9.x for settings to work
 RUN pecl install -f xdebug-2.9.8 && docker-php-ext-enable xdebug
 COPY php-xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+# Run and configure sendmail (for email testing)
+# Thanks to: https://r.je/sendmail-php-docker for the info
+RUN apt-get update -y && apt-get install -y \
+	mailutils \
+	sendmail \
+	sendmail-bin \
+	sensible-mda
 
 # Set up entrypoint enabling host.docker.internal for Linux
 COPY entrypoint.sh /usr/bin/entrypoint.sh

@@ -12,6 +12,10 @@ fi
 # Copy in original PHP docker-php-entrypoint
 set -e
 
+# Configure sendmail
+echo "$(hostname -i)\t$(hostname) $(hostname).localhost" >> /etc/hosts
+service sendmail restart
+
 # first arg is `-f` or `--some-option`
 if [ "${1#-}" != "$1" ]; then
  set -- apache2-foreground "$@"

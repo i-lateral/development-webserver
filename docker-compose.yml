@@ -16,7 +16,7 @@ services:
 
   web:
     container_name: dev-server-web
-    image: ilateral/php:7.3-apache-stretch
+    image: ilateral/php:7.4-apache-buster
     working_dir: /var/www
     restart: always
     networks:
