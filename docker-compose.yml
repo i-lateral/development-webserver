@@ -1,7 +1,7 @@
 version: '3'
 services:
   database:
-    container_name: dev-server-db
+    container_name: webserver-db
     image: mariadb
     networks:
       devserver:
@@ -15,7 +15,7 @@ services:
       - 3306:3306
 
   web:
-    container_name: dev-server-web
+    container_name: webserver-web
     image: ilateral/php:7.4-apache-buster
     working_dir: /var/www
     restart: always
@@ -32,6 +32,7 @@ services:
       - 443:443
     volumes:
       - ./sites:/var/www/html
+      - ./files:/home/www-data/files
       - ~/.ssh:/home/www-data/.ssh
     depends_on:
       - database

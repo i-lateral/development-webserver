@@ -74,20 +74,40 @@ mysql server name (rather than the db hostname). EG:
     SS_DATABASE_PASSWORD="dev"
     SS_DATABASE_NAME="dbschema"
 
-### Executing project tasks (such as Sake or SSPAK)
+## SSH Keys
+
+This project is designed to share your local SSH keys from `~/.ssh` with the `www-data`
+user account in the docker server.
+
+## `Sites` Directory
+
+This project assumes site codebases will be installed to the `sites` directory. Children of this directory are
+ignored via `.gitignore`.
+
+To add your codebase, simply install it to:
+
+    /path/to/development-webserver/sites/my-website-project
+
+## `Files` Directory
+
+If you want to share generic files with your docker web container then you
+can add them to the `files` directory. This directory is automatically mapped 
+to the home folder of the `www-data` user. IE:
+
+    /home/www-data/files
+
+## Executing project tasks (such as Sake or SSPAK)
 
 If you want to execute your local project commands (such as SilverStripe
 sake), you will have to do them via `docker-compose exec` (using the
 `docker-compose.yml` file located in the development-webserver project).
 You MAY also need to run the command as the local web user.
 
-#### Sake
+### Sake
 
-    docker-compose -f ../development-webserver/docker-compose.yml exec -u www-data web /var/www/html/project-name/vendor/bin/sake dev/build flush=1
+    docker-compose -f ../docker-compose.yml exec -u www-data web /var/www/html/project-name/vendor/bin/sake dev/build flush=1##### SSPAK
 
-##### SSPAK
-
-    docker-compose -f ../development-webserver/docker-compose.yml exec -u www-data web sspak load /var/www/html/site.sspak /var/www/html/project-name
+    docker-compose -f ../docker-compose.yml exec -u www-data web sspak load /var/www/html/site.sspak /var/www/html/project-name
 
 **NOTE** When executing these commands, the system paths are within the docker container NOT the local (host) filesystem
 
