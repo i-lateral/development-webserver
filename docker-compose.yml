@@ -31,7 +31,8 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - ../:/var/www/html
+      - ./sites:/var/www/html
+      - ~/.ssh:/home/www-data/.ssh
     depends_on:
       - database
     links:
