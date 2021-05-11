@@ -7,7 +7,7 @@ services:
       devserver:
         ipv4_address: 172.158.0.98
     volumes:
-      - db-data:/var/lib/mysql
+      - ./databases:/var/lib/mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"  #set this via your env variable
@@ -38,9 +38,6 @@ services:
       - database
     links:
       - database
-
-volumes:
- db-data:
 
 networks:
   devserver:
