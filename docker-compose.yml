@@ -14,6 +14,17 @@ services:
     ports:
       - 3306:3306
 
+  adminer:
+    container_name: webserver-adminer
+    image: adminer:standalone
+    networks:
+      devserver:
+        ipv4_address: 172.158.0.100
+    ports:
+      - 8888:8080
+    depends_on:
+      - database
+
   web:
     container_name: webserver-web
     image: ilateral/php:7.4-apache-buster
