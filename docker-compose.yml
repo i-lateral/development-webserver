@@ -2,7 +2,7 @@ version: '3'
 services:
   database:
     container_name: webserver-db
-    image: mariadb
+    image: mariadb:11.2
     networks:
       devserver:
         ipv4_address: 172.158.0.98
@@ -11,6 +11,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"  #set this via your env variable
+      MARIADB_AUTO_UPGRADE: true
     ports:
       - 3306:3306
 
