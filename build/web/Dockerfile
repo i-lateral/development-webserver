@@ -67,6 +67,7 @@ RUN docker-php-ext-configure intl && \
 	docker-php-ext-configure gd --with-jpeg && \
 	docker-php-ext-enable imagick && \
 	docker-php-ext-install -j$(nproc) \
+		exif \
 		intl \
 		gd \
 		ldap \
