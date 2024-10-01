@@ -1,4 +1,4 @@
-FROM php:7.4-apache-buster
+FROM php:8.2-apache-buster
 LABEL author="Al Twohill <al@twohill.nz>"
 
 # Remove and re-create www-data users and map to local system ID
@@ -48,12 +48,9 @@ RUN apt-get update -y && apt-get install -y \
 	--no-install-recommends && \
 	curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && \
 	curl -sS http://silverstripe.github.io/sspak/install | php -- /usr/local/bin && \
-	pecl install imagick-3.4.3 && \
+	pecl install imagick && \
 	apt-get autoremove -y && \
-	rm -r /var/lib/apt/lists/* && \
-	cd /root && \
-    wget -q https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.stretch_amd64.deb && \
-    dpkg -i wkhtmltox_0.12.6-1.stretch_amd64.deb
+	rm -r /var/lib/apt/lists/*
 
 # Install WP-CLI
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
@@ -87,7 +84,7 @@ RUN echo "ServerName localhost" > /etc/apache2/conf-available/fqdn.conf
 COPY php-custom.ini /usr/local/etc/php/conf.d/custom.ini
 
 # Install and configure xdebug must be 2.9.x for settings to work
-RUN pecl install -f xdebug-2.9.8 && docker-php-ext-enable xdebug
+RUN pecl install xdebug-3.2.1 && docker-php-ext-enable xdebug
 COPY php-xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 # Run and configure sendmail (for email testing)
