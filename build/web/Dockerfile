@@ -1,4 +1,4 @@
-FROM php:8.2-apache-buster
+FROM php:8.2-apache
 LABEL author="Al Twohill <al@twohill.nz>"
 
 # Remove and re-create www-data users and map to local system ID
@@ -23,6 +23,7 @@ RUN apt-get update -y && apt-get install -y \
 		g++ \
 		git-core \
 		gzip \
+		iproute2 \
 		less \
 		libcurl4-openssl-dev \
 		libgd-dev \
@@ -49,8 +50,7 @@ RUN apt-get update -y && apt-get install -y \
 	curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && \
 	curl -sS http://silverstripe.github.io/sspak/install | php -- /usr/local/bin && \
 	pecl install imagick && \
-	apt-get autoremove -y && \
-	rm -r /var/lib/apt/lists/*
+	apt-get autoremove -y
 
 # Install WP-CLI
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
@@ -84,7 +84,7 @@ RUN echo "ServerName localhost" > /etc/apache2/conf-available/fqdn.conf
 COPY php-custom.ini /usr/local/etc/php/conf.d/custom.ini
 
 # Install and configure xdebug must be 2.9.x for settings to work
-RUN pecl install xdebug-3.2.1 && docker-php-ext-enable xdebug
+RUN pecl install xdebug-3.3.1 && docker-php-ext-enable xdebug
 COPY php-xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 # Run and configure sendmail (for email testing)
@@ -98,6 +98,9 @@ RUN apt-get update -y && apt-get install -y \
 # Set up entrypoint enabling host.docker.internal for Linux
 COPY entrypoint.sh /usr/bin/entrypoint.sh
 RUN chmod 777 /usr/bin/entrypoint.sh
+
+# And clean up the image
+RUN rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/usr/bin/entrypoint.sh"]
 CMD ["apache2-foreground"]
